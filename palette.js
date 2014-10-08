@@ -454,6 +454,10 @@ Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component
             tag: 'hr'
         },
 
+        progress: {
+            tag: 'progress'
+        },
+
         list: {
             tag: 'select',
 
