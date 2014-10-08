@@ -369,7 +369,8 @@ Palette.get = function(nameOrElement) {
         while (nameOrElement && !Element.hasClass(nameOrElement,
                 'palettejs-palette'))
             nameOrElement = nameOrElement.parentNode;
-        nameOrElement = Element.get(nameOrElement, 'id');
+        nameOrElement = (Element.get(nameOrElement, 'id')
+                .match(/^palettejs-palette-(.*)$/) || [])[1];
     }
     return Palette.instances[nameOrElement];
 };
