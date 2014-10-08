@@ -96,8 +96,6 @@ body {
 
 .palettejs-label {
   text-align: right; }
-  .palettejs-label:empty {
-    display: none; }
   .palettejs-label label:after {
     content: ':'; }
 

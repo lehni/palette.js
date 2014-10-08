@@ -292,17 +292,25 @@ function Component(palette, parent, name, props, values, row) {
         // No type defined, so we're dealing with a layout component that
         // contains nested child components. See if they are to be aligned as
         // columns or rows, and lay things out accordingly.
-        var columns = props.columns;
+        // There are three possible types:  'columns', 'rows',  'horizontal'.
+        // 'horizontal' is the same as 'columns' but in its own separate table,
+        // unlinked from the parent layout.
+        var layout = props.layout || 'rows';
+        var columns = layout === 'columns';
         // On the root element, we need to create the table and row even if it's
         // a columns layout.
-        var table = this._table = !(columns && row) && Element.create(
-                'table', { class: 'palettejs-pane' }, [ 'tbody' ]);
+        var table = this._table = (layout === 'horizontal' || !(columns && row))
+                && Element.create('table', { class: 'palettejs-pane' },
+                    ['tbody']);
+        if (layout === 'horizontal')
+            columns = true;
         var tbody = this._tbody = table && table.firstChild;
         var components = this._components = {};
-        var currentRow = row;
+        // Only use current row if no new table is inserted
+        var currentRow = !table && row;
         var numCells = 0;
         element = row && table;
-        className = 'layout-' + (columns ? 'columns' : 'rows');
+        className = 'layout-' + layout;
         this._numCells = 0;
         for (var key in props) {
             var component = props[key];
@@ -341,7 +349,7 @@ function Component(palette, parent, name, props, values, row) {
         each(components, function(component, key) {
             // NOTE: Components with columns layout won't have their _cell set.
             if (numCells > 2 && component._cell && !columns)
-                Element.set(component._cell, 'colspan', numCells - 1);
+                Element.set(component._cell, 'colspan', numCells);
             // Replace each entry in values with getters/setters so we can
             // directly link the value to the component and observe change.
             if (key in values) {
@@ -382,7 +390,7 @@ function Component(palette, parent, name, props, values, row) {
         this._cell = Element.addChild(row, ['td', {
                 class: 'palettejs-component palettejs-' + className,
                 id: 'palettejs-component-' + name
-            }, [ element ]
+            }, [element]
         ]);
         if (parent)
             parent._numCells++;
