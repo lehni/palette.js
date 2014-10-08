@@ -1,5 +1,5 @@
-# Palette.js
+# Palette.js - Insert Elevator Pitch Here.
 
-Copyright © 2011 - 2012, Jürg Lehni.
+Copyright © 2011 - 2014, Jürg Lehni.
 
 Documentation coming soon.
