@@ -257,19 +257,19 @@ function Emitter() {
  * @class
  */
 function Palette(props) {
+    this._id = Palette._id = (Palette._id || 0) + 1;
     // Support legacy constructor(title, components, values)
     if (!isPlainObject(props)) {
         var args = arguments;
         props = { title: args[0], components: args[1], values: args[2] };
     }
-    var components = this._components = props.components,
-        id = this._id = Palette._id = (Palette._id || 0) + 1,
-        title = props.title,
-        name = this._name = props.name || (title
-                // Hyphenate with '-' and replace non-word characters with '_'.
-                ? title.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/\W/g, '_')
-                    .toLowerCase()
-                : 'palette-' + this._id);
+    var components = this._components = props.components;
+    var title = props.title;
+    var name = this._name = props.name || (title
+            // Hyphenate with '-' and replace non-word characters with '_'.
+            ? title.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/\W/g, '_')
+                .toLowerCase()
+            : 'palette-' + this._id);
     this._values = props.values || {};
     this._allComponents = {};
     // Create one root component that handles the layout and contains all
@@ -285,12 +285,11 @@ function Palette(props) {
                 Element.create('div', { class: 'palettejs-root' }));
     this._element = parent.appendChild(Element.create('div', {
                 class: 'palettejs-palette palettejs-' + root._className,
-                id: 'palettejs-palette-' + name,
-                'data-id': id
+                id: 'palettejs-palette-' + name
             }, [root._table]));
     set(this, props, { components: true, values: true, parent: true }, true);
     Palette.instances.push(this);
-    Palette.instances[id] = this;
+    Palette.instances[name] = this;
 }
 
 Palette.prototype = merge(Emitter('onChange'), /** @lends Palette# */{
@@ -363,16 +362,16 @@ Palette.prototype = merge(Emitter('onChange'), /** @lends Palette# */{
 
 Palette.instances = [];
 
-Palette.get = function(idOrElement) {
-    if (typeof idOrElement === 'object') {
+Palette.get = function(nameOrElement) {
+    if (typeof nameOrElement === 'object') {
         // Support child elements by walking up the parents of the
         // element until the palette element is found.
-        while (idOrElement && !Element.hasClass(idOrElement,
+        while (nameOrElement && !Element.hasClass(nameOrElement,
                 'palettejs-palette'))
-            idOrElement = idOrElement.parentNode;
-        idOrElement = Element.get(idOrElement, 'data-id');
+            nameOrElement = nameOrElement.parentNode;
+        nameOrElement = Element.get(nameOrElement, 'id');
     }
-    return Palette.instances[idOrElement];
+    return Palette.instances[nameOrElement];
 };
 
 // Component meta-information, by type.
