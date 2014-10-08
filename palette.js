@@ -187,65 +187,70 @@ var Element = new function() {
 
 /**
  * @name Emitter
- * @namespace
  * @private
  */
-var Emitter = each(['onClick', 'onChange'], function(key) {
-    var type = key.substring(2).toLowerCase();
-    var name = '_' + key; 
-    define(this, key, {
-        enumerable: true,
-        configurable: true,
-        get: function() {
-            return this[name];
+function Emitter(events) {
+    // Returns a mixin object that contains three Emitter methods #on(), #off()
+    // and #emit(), as well as getters & setters defined for all event
+    // properties listed in events, in a way that #onClick automatically
+    // delegates to #on('click').
+    return each(events, function(key) {
+        var type = key.substring(2).toLowerCase();
+        var name = '_' + key; 
+        define(this, key, {
+            enumerable: true,
+            configurable: true,
+            get: function() {
+                return this[name];
+            },
+            set: function(func) {
+                // Detach the previous event, if there was one.
+                var prev = this[name];
+                if (prev)
+                    this.off(type, prev);
+                if (func)
+                    this.on(type, func);
+                this[name] = func;
+            }
+        });
+    }, {
+        on: function(type, func) {
+            var handlers = this._callbacks = this._callbacks || {};
+            handlers = handlers[type] = handlers[type] || [];
+            if (handlers.indexOf(func) === -1) {
+                handlers.push(func);
+            }
         },
-        set: function(func) {
-            // Detach the previous event, if there was one.
-            var prev = this[name];
-            if (prev)
-                this.off(type, prev);
-            if (func)
-                this.on(type, func);
-            this[name] = func;
+
+        off: function(type, func) {
+            var handlers = this._callbacks && this._callbacks[type];
+            if (handlers) {
+                // See if this is the last handler that we're detaching (or if we
+                // are detaching all handlers).
+                var index;
+                if (!func || (index = handlers.indexOf(func)) !== -1
+                        && handlers.length === 1) {
+                    delete this._callbacks[type];
+                } else if (index !== -1) {
+                    handlers.splice(index, 1);
+                }
+            }
+        },
+
+        emit: function(type) {
+            // Returns true if emitted, false otherwise
+            var handlers = this._callbacks && this._callbacks[type];
+            if (!handlers)
+                return false;
+            var args = [].slice.call(arguments, 1);
+            for (var i = 0, l = handlers.length; i < l; i++) {
+                if (handlers[i].apply(this, args) === false)
+                    break;
+            }
+            return true;
         }
     });
-}, {
-    on: function(type, func) {
-        var handlers = this._callbacks = this._callbacks || {};
-        handlers = handlers[type] = handlers[type] || [];
-        if (handlers.indexOf(func) === -1) {
-            handlers.push(func);
-        }
-    },
-
-    off: function(type, func) {
-        var handlers = this._callbacks && this._callbacks[type];
-        if (handlers) {
-            // See if this is the last handler that we're detaching (or if we
-            // are detaching all handlers).
-            var index;
-            if (!func || (index = handlers.indexOf(func)) !== -1
-                    && handlers.length === 1) {
-                delete this._callbacks[type];
-            } else if (index !== -1) {
-                handlers.splice(index, 1);
-            }
-        }
-    },
-
-    emit: function(type) {
-        // Returns true if emitted, false otherwise
-        var handlers = this._callbacks && this._callbacks[type];
-        if (!handlers)
-            return false;
-        var args = [].slice.call(arguments, 1);
-        for (var i = 0, l = handlers.length; i < l; i++) {
-            if (handlers[i].apply(this, args) === false)
-                break;
-        }
-        return true;
-    }
-});
+}
 
 /**
  * @name Component
@@ -402,9 +407,7 @@ function Component(palette, parent, name, props, values, row) {
     this._defaultValue = this._value;
 }
 
-Component.prototype = merge(Emitter, /** @lends Component# */{
-    _events: [ 'onChange', 'onClick' ],
-
+Component.prototype = merge(Emitter([ 'onChange', 'onClick' ]), /** @lends Component# */{
     // DOCS: All!
 
     // Meta-information, by type. This is stored in _meta on the components.
@@ -722,9 +725,7 @@ function Palette(props) {
     Palette.instances[id] = this;
 }
 
-Palette.prototype = merge(Emitter, /** @lends Palette# */{
-    _events: [ 'onChange' ],
-
+Palette.prototype = merge(Emitter([ 'onChange' ]), /** @lends Palette# */{
     // DOCS: Palette#initialize(props)
     // DOCS: Palette#initialize(title, components, values)
     // DOCS: Palette#components
