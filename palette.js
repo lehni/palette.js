@@ -106,10 +106,6 @@ var Element = new function() {
             return (root || document).querySelector(selector);
         },
 
-        findAll: function(selector, root) {
-            return (root || document).querySelectorAll(selector);
-        },
-
         get: function(el, key) {
             return el
                 ? special.test(key)
