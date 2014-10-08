@@ -189,12 +189,12 @@ var Element = new function() {
  * @name Emitter
  * @private
  */
-function Emitter(events) {
+function Emitter() {
     // Returns a mixin object that contains three Emitter methods #on(), #off()
     // and #emit(), as well as getters & setters defined for all event
-    // properties listed in events, in a way that #onClick automatically
+    // properties listed in the arguments, in a way that #onClick automatically
     // delegates to #on('click').
-    return each(events, function(key) {
+    return each(arguments, function(key) {
         var type = key.substring(2).toLowerCase();
         var name = '_' + key; 
         define(this, key, {
@@ -407,7 +407,7 @@ function Component(palette, parent, name, props, values, row) {
     this._defaultValue = this._value;
 }
 
-Component.prototype = merge(Emitter([ 'onChange', 'onClick' ]), /** @lends Component# */{
+Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component# */{
     // DOCS: All!
 
     // Meta-information, by type. This is stored in _meta on the components.
@@ -725,7 +725,7 @@ function Palette(props) {
     Palette.instances[id] = this;
 }
 
-Palette.prototype = merge(Emitter([ 'onChange' ]), /** @lends Palette# */{
+Palette.prototype = merge(Emitter('onChange'), /** @lends Palette# */{
     // DOCS: Palette#initialize(props)
     // DOCS: Palette#initialize(title, components, values)
     // DOCS: Palette#components
