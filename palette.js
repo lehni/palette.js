@@ -13,9 +13,9 @@
 var Palette = function() {
 
 // From straps.js, inlined here:
-var forEach = [].forEach;
 var define = Object.defineProperty;
 var describe = Object.getOwnPropertyDescriptor;
+var forEach = [].forEach;
 
 function forIn(iter, bind) {
     for (var i in this)
@@ -41,10 +41,6 @@ function set(obj, props, exclude, defined) {
     return obj;
 }
 
-function pick(a, b) {
-    return a === undefined ? b : a;
-}
-
 function merge() {
     // Use Object.defineProperty so we can merge getters / setters too.
     var res = {};
@@ -54,6 +50,10 @@ function merge() {
         }
     })
     return res;
+}
+
+function pick(a, b) {
+    return a === undefined ? b : a;
 }
 
 function isPlainObject(obj) {
@@ -282,11 +282,11 @@ function Component(palette, parent, name, props, values, row) {
     var create = Element.create;
     if (!type) {
         // No type defined, so we're dealing with a layout component that
-        // contains nested child components. See if they are to be aligned
-        // as columns or rows, and lay things out accordingly.
+        // contains nested child components. See if they are to be aligned as
+        // columns or rows, and lay things out accordingly.
         var columns = props.columns;
-            // On the root element, we need to create the table and row even
-            // if it's a columns layout.
+        // On the root element, we need to create the table and row even if it's
+        // a columns layout.
         var table = this._table = !(columns && row) && create(
                 'table', { class: 'palettejs-pane' }, [ 'tbody' ]);
         var tbody = this._tbody = table && table.firstChild;
@@ -299,8 +299,8 @@ function Component(palette, parent, name, props, values, row) {
         for (var key in props) {
             var component = props[key];
             if (isPlainObject(component)) {
-                // Create the rows for vertical elements, as well as
-                // columns root elements.
+                // Create the rows for vertical elements, as well as columns
+                // root elements.
                 if (table && !(columns && currentRow)) {
                     currentRow = Element.addChildren(tbody, ['tr', {
                         class: 'palettejs-row',
@@ -312,8 +312,8 @@ function Component(palette, parent, name, props, values, row) {
                 }
                 components[key] = new Component(palette, this, key,
                         component, values, currentRow);
-                // Keep track of the maximum amount of cells per row, so we
-                // can adjust colspan after.
+                // Keep track of the maximum amount of cells per row, so we can
+                // adjust colspan after.
                 numCells = Math.max(numCells, this._numCells);
                 // Do not reset cell counter if all components go to the
                 // same parent row.
@@ -331,8 +331,7 @@ function Component(palette, parent, name, props, values, row) {
         if (columns && parent)
             parent._numCells = numCells;
         each(components, function(component, key) {
-            // NOTE: Components with columns layout won't have their _cell
-            // set.
+            // NOTE: Components with columns layout won't have their _cell set.
             if (numCells > 2 && component._cell && !columns)
                 Element.set(component._cell, 'colspan', numCells - 1);
             // Replace each entry in values with getters/setters so we can
@@ -352,7 +351,7 @@ function Component(palette, parent, name, props, values, row) {
             }
         });
         // Add child components directly to this component, so we can access
-        // it through the same path as in the components object literal that
+        // them through the same path as in the components object literal that
         // was passed.
         set(this, components);
     } else {
@@ -387,23 +386,22 @@ function Component(palette, parent, name, props, values, row) {
             parent._numCells += 2;
     }
     this._className = className;
-
     // Attach default 'change' even that delegates to the palette.
     this.on('change', function(value) {
-        if (!this._dontFire)
+        if (this._emit)
             palette.emit('change', this, this._name, value);
     });
     // Now that everything is set up, copy over values fro, props.
-    // NOTE: This triggers setters, which is why we set _dontFire = true,
-    // and why we can only call this after everything else is set up (e.g.
-    // set label() requires this._labelCell).
-    this._dontFire = true;
+    // NOTE: This triggers setters, which is why we set _emit = false, and why
+    // we can only call this after everything else is set up (e.g. set label() 
+    // equires this._labelCell).
+    this._emit = false;
     // Exclude name because it's already set, and value since we want to set
     // it after range.
     set(this, props, { name: true, value: true }, true);
     this.value = value;
     // Start firing change events after we have initialized.
-    this._dontFire = false;
+    this._emit = true;
     this._defaultValue = this._value;
 }
 
@@ -548,7 +546,7 @@ Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component
             value = parseFloat(value, 10);
         if (this._value !== value) {
             this._value = value;
-            if (!this._dontFire)
+            if (this._emit)
                 this.emit('change', this.value);
         }
     },
