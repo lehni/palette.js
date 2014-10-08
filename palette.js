@@ -394,15 +394,14 @@ function Component(palette, parent, name, props, values, row) {
     // Now that everything is set up, copy over values fro, props.
     // NOTE: This triggers setters, which is why we set _emit = false, and why
     // we can only call this after everything else is set up (e.g. set label() 
-    // equires this._labelCell).
+    // requires this._labelCell).
     this._emit = false;
     // Exclude name because it's already set, and value since we want to set
     // it after range.
     set(this, props, { name: true, value: true }, true);
-    this.value = value;
+    this._defaultValue = this.value = value;
     // Start firing change events after we have initialized.
     this._emit = true;
-    this._defaultValue = this._value;
 }
 
 Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component# */{
