@@ -165,6 +165,10 @@ var Element = new function() {
                 el.parentNode.removeChild(el);
         },
 
+        addChild: function(el, child) {
+            return create(child, el)[0];
+        },
+
         addChildren: function(el, children) {
             // We can use the create() function for this too!
             return create(children, el);
@@ -173,10 +177,6 @@ var Element = new function() {
         removeChildren: function(el) {
             while (el.firstChild)
                 el.removeChild(el.firstChild);
-        },
-
-        addChild: function(el, child) {
-            return create(child, el)[0];
         },
 
         insertBefore: function(ref, el) {
@@ -279,7 +279,15 @@ function Component(palette, parent, name, props, values, row) {
     var meta = this._meta = this._types[type] || { type: type };
     var element;
     var className;
-    var create = Element.create;
+    if (row) {
+        this._labelCell = Element.addChild(row, ['td', {
+            class: 'palettejs-label',
+            id: 'palettejs-label-' + name
+        }]);
+        // We just added one cell to the row:
+        if (parent)
+            parent._numCells++;
+    }
     if (!type) {
         // No type defined, so we're dealing with a layout component that
         // contains nested child components. See if they are to be aligned as
@@ -287,7 +295,7 @@ function Component(palette, parent, name, props, values, row) {
         var columns = props.columns;
         // On the root element, we need to create the table and row even if it's
         // a columns layout.
-        var table = this._table = !(columns && row) && create(
+        var table = this._table = !(columns && row) && Element.create(
                 'table', { class: 'palettejs-pane' }, [ 'tbody' ]);
         var tbody = this._tbody = table && table.firstChild;
         var components = this._components = {};
@@ -302,10 +310,10 @@ function Component(palette, parent, name, props, values, row) {
                 // Create the rows for vertical elements, as well as columns
                 // root elements.
                 if (table && !(columns && currentRow)) {
-                    currentRow = Element.addChildren(tbody, ['tr', {
+                    currentRow = Element.addChild(tbody, ['tr', {
                         class: 'palettejs-row',
                         id: 'palettejs-row-' + key
-                    }])[0];
+                    }]);
                     // Set _row for the columns root element.
                     if (columns)
                         this._row = currentRow;
@@ -356,7 +364,7 @@ function Component(palette, parent, name, props, values, row) {
         set(this, components);
     } else {
         var that = this;
-        element = this._element = create(meta.tag || 'input', {
+        element = this._element = Element.create(meta.tag || 'input', {
             id: !meta.tag ? 'palettejs-input-' + name : null,
             type: meta.type,
             events: {
@@ -371,19 +379,13 @@ function Component(palette, parent, name, props, values, row) {
         className = 'type-' + type;
     }
     if (element) {
-        Element.addChildren(row, [
-            this._labelCell = create('td', {
-                class: 'palettejs-label',
-                id: 'palettejs-label-' + name
-            }),
-            this._cell = create('td', {
+        this._cell = Element.addChild(row, ['td', {
                 class: 'palettejs-component palettejs-' + className,
                 id: 'palettejs-component-' + name
-            }, [ element ])
+            }, [ element ]
         ]);
-        // We just added two cells to the row:
         if (parent)
-            parent._numCells += 2;
+            parent._numCells++;
     }
     this._className = className;
     // Attach default 'change' even that delegates to the palette.
