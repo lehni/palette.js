@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Palette</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="../palette.js"></script>
+</head>
+<body>
+<script>
+    var values = {
+        number: 1,
+        string: 200,
+        checkbox: true,
+        list: 'Two',
+        text: 'Hello World!',
+        slider: 10
+    };
+
+    var palette = new Palette({
+        title: 'Values',
+        components: {
+            number: {
+                type: 'number',
+                label: 'A Number',
+                step: 2.5
+            },
+            string: {
+                type: 'string',
+                label: 'A String'
+            },
+            row: {
+                columns: true,
+                button1: {
+                    label: 'Multiple Buttons',
+                    type: 'button',
+                    value: 'Button 1'
+                },
+                button2: {
+                    type: 'button',
+                    value: 'Button 2'
+                },
+                button3: {
+                    type: 'button',
+                    value: 'Button 3'
+                }
+            },
+            checkbox: {
+                type: 'boolean',
+                label: 'A Checkbox',
+                onChange: function(value) {
+                    values.list = value ? 'Two' : 'One';
+                }
+            },
+            list: {
+                type: 'list',
+                label: 'A List',
+                options: [ 'One', 'Two', 'Three' ]
+            },
+            text: {
+                type: 'text',
+                label: 'A Text'
+            },
+            button: {
+                type: 'button',
+                label: 'A Button',
+                value: 'Click Me!',
+                onClick: function() {
+                    console.log('Resetting');
+                    palette.reset();
+                    values.text = 'You clicked!';
+                }
+            },
+            slider: {
+                type: 'slider',
+                label: 'A Slider',
+                range: [0, 50],
+                step: 10
+            }
+        },
+        values: values,
+        onChange: function(component, name, value) {
+            console.log(name + ' = ' + value, component);
+        }
+    });
+    values.number = 10;
+    values.string = 'Woop woop';
+    values.list = 'Three';
+    console.log(JSON.stringify(values));
+</script>
+</body>
+</html>

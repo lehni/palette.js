@@ -1,0 +1,101 @@
+body,
+select,
+input,
+textarea {
+  font-family: 'Lucida Grande', Geneva, Verdana, Arial, sans-serif; }
+
+body {
+  background: #fff;
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #000;
+  overflow: hidden;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-smoothing: antialiased; }
+
+.palettejs-root {
+  font-size: 11px;
+  line-height: 16px;
+  position: absolute;
+  top: 0;
+  right: 0; }
+
+.palettejs-palette {
+  margin: 8px 8px 0 0;
+  border-radius: 4px;
+  background: #fafafa;
+  border: 1px solid #e2e2e2;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none; }
+
+.palettejs-layout-rows,
+.palettejs-layout-columns {
+  vertical-align: top; }
+
+.palettejs-pane {
+  width: 100%;
+  border: 2px solid transparent;
+  border-collapse: collapse;
+  border-spacing: 2px; }
+  .palettejs-pane caption {
+    background: #e2e2e2;
+    text-align: center;
+    padding: 2px 8px;
+    white-space: nowrap; }
+  .palettejs-pane td {
+    padding: 0; }
+  .palettejs-pane .hidden {
+    visibility: hidden; }
+  .palettejs-pane tr.hidden {
+    display: table-row; }
+  .palettejs-pane td.hidden {
+    display: table-cell; }
+  .palettejs-pane .disabled {
+    color: #999; }
+  .palettejs-pane .palettejs-pane {
+    width: auto;
+    border: 0; }
+    .palettejs-pane .palettejs-pane caption {
+      background: none;
+      margin-bottom: -12px; }
+      .palettejs-pane .palettejs-pane caption span {
+        padding: 0 4px;
+        background: #fafafa; }
+      .palettejs-pane .palettejs-pane caption + tbody {
+        display: block;
+        margin: 2px;
+        padding: 8px 2px 2px;
+        border: 1px solid #e2e2e2;
+        border-radius: 3px; }
+
+.palettejs-type-number input {
+  width: 50px; }
+
+.palettejs-type-text span {
+  white-space: pre-line; }
+
+.palettejs-type-slider input {
+  width: 100%;
+  min-width: 100px; }
+
+.palettejs-type-ruler hr {
+  border: 0;
+  height: 0;
+  border-bottom: 1px dotted #e2e2e2;
+  margin: 2px 0; }
+
+.palettejs-label {
+  text-align: right; }
+  .palettejs-label:empty {
+    display: none; }
+  .palettejs-label label {
+    margin-left: 2px;
+    margin-right: 2px; }
+    .palettejs-label label:after {
+      content: ':'; }
