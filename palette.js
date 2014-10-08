@@ -225,8 +225,8 @@ function Emitter() {
         off: function(type, func) {
             var handlers = this._callbacks && this._callbacks[type];
             if (handlers) {
-                // See if this is the last handler that we're detaching (or if we
-                // are detaching all handlers).
+                // See if this is the last handler that we're detaching (or if
+                // we are detaching all handlers).
                 var index;
                 if (!func || (index = handlers.indexOf(func)) !== -1
                         && handlers.length === 1) {
@@ -281,12 +281,12 @@ function Palette(props) {
     set(components, root._components);
     var parent = props.parent
             || Element.find('.palettejs-root')
-            || Element.find('body').appendChild(
-                Element.create('div', { class: 'palettejs-root' }));
-    this._element = parent.appendChild(Element.create('div', {
+            || Element.addChild(Element.find('body'),
+                ['div', { class: 'palettejs-root' }]);
+    this._element = Element.addChild(parent, ['div', {
                 class: 'palettejs-palette palettejs-' + root._className,
                 id: 'palettejs-palette-' + name
-            }, [root._table]));
+            }, [root._table]]);
     set(this, props, { components: true, values: true, parent: true }, true);
     Palette.instances.push(this);
     Palette.instances[name] = this;
@@ -474,7 +474,7 @@ function Component(palette, parent, name, props, values, row) {
         // No type defined, so we're dealing with a layout component that
         // contains nested child components. See if they are to be aligned as
         // columns or rows, and lay things out accordingly.
-        // There are three possible types:  'columns', 'rows',  'horizontal'.
+        // There are three possible types: 'rows', 'columns', 'horizontal'.
         // 'horizontal' is the same as 'columns' but in its own separate table,
         // unlinked from the parent layout.
         var layout = props.layout || 'rows';
