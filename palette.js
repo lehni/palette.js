@@ -642,29 +642,29 @@ Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component
         this._setEnabled(enabled);
     },
 
-    get range() {
-        return [parseFloat(Element.get(this._element, 'min')),
-                parseFloat(Element.get(this._element, 'max'))];
-    },
-
-    set range(range) {
-        Element.set(this._element, { min: range[0], max: range[1] });
-    },
-
     get min() {
-        return this.range[0];
+        return parseFloat(Element.get(this._element, 'min'));
     },
 
     set min(min) {
-        this.range = [min, this.max];
+        Element.set(this._element, 'min', min);
     },
 
     get max() {
-        return this.range[1];
+        return parseFloat(Element.get(this._element, 'max'));
     },
 
     set max(max) {
-        this.range = [this.min, max];
+        Element.set(this._element, 'max', max);
+    },
+
+    get range() {
+        return [this.min, this.max];
+    },
+
+    set range(range) {
+        this.min = range ? range[0] : null;
+        this.max = range ? range[1] : null;
     },
 
     get step() {
