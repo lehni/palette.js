@@ -253,6 +253,188 @@ function Emitter() {
 }
 
 /**
+ * @name Palette
+ * @class
+ */
+function Palette(props) {
+    // Support legacy constructor(title, components, values)
+    if (!isPlainObject(props)) {
+        var args = arguments;
+        props = { title: args[0], components: args[1], values: args[2] };
+    }
+    var components = this._components = props.components,
+        id = this._id = Palette._id = (Palette._id || 0) + 1,
+        title = props.title,
+        name = this._name = props.name || (title
+                // Hyphenate with '-' and replace non-word characters with '_'.
+                ? title.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/\W/g, '_')
+                    .toLowerCase()
+                : 'palette-' + this._id);
+    this._values = props.values || {};
+    this._allComponents = {};
+    // Create one root component that handles the layout and contains all
+    // the components.
+    var root = this._root = new Component(this, null, 'root', components,
+            this._values);
+    // Write the created components back into the passed components object,
+    // so they are exposed and can easily be accessed from the outside.
+    set(components, root._components);
+    var parent = props.parent
+            || Element.find('.palettejs-root')
+            || Element.find('body').appendChild(
+                Element.create('div', { class: 'palettejs-root' }));
+    this._element = parent.appendChild(Element.create('div', {
+                class: 'palettejs-palette palettejs-' + root._className,
+                id: 'palettejs-palette-' + name,
+                'data-id': id
+            }, [root._table]));
+    set(this, props, { components: true, values: true, parent: true }, true);
+    Palette.instances.push(this);
+    Palette.instances[id] = this;
+}
+
+Palette.prototype = merge(Emitter('onChange'), /** @lends Palette# */{
+    // DOCS: Palette#initialize(props)
+    // DOCS: Palette#initialize(title, components, values)
+    // DOCS: Palette#components
+    // DOCS: Palette#values
+    // DOCS: Palette#remove()
+
+    get name() {
+        return this._name;
+    },
+
+    get title() {
+        return this._root.title;
+    },
+
+    set title(title) {
+        this._root.title = title;
+    },
+
+    get element() {
+        return this._element;
+    },
+
+    get components() {
+        return this._components;
+    },
+
+    get allComponents() {
+        return this._allComponents;
+    },
+
+    get values() {
+        return this._values;
+    },
+
+    get enabled() {
+        return this._root.enabled;
+    },
+
+    set enabled(enabled) {
+        this._root.enabled = enabled;
+    },
+
+    /**
+     * Resets the values of the components to their
+     * {@link Component#defaultValue}.
+     */
+    reset: function() {
+        this._root.reset();
+    },
+
+    remove: function() {
+        Element.remove(this._element);
+        var instances = Palette.instances;
+        var index = instances.indexOf(this);
+        var remove = index !== -1;
+        if (remove) {
+            instances.splice(index, 1);
+            delete instances[this._id];
+        }
+        return remove;
+    },
+
+    toString: function() {
+        return 'Palette ' + this._name || '@' + this._id;
+    }
+});
+
+Palette.instances = [];
+
+Palette.get = function(idOrElement) {
+    if (typeof idOrElement === 'object') {
+        // Support child elements by walking up the parents of the
+        // element until the palette element is found.
+        while (idOrElement && !Element.hasClass(idOrElement,
+                'palettejs-palette'))
+            idOrElement = idOrElement.parentNode;
+        idOrElement = Element.get(idOrElement, 'data-id');
+    }
+    return Palette.instances[idOrElement];
+};
+
+// Componenent meta-information, by type.
+// This is stored in #_meta on the components.
+Palette.components = {
+    'boolean': {
+        type: 'checkbox',
+        value: 'checked'
+    },
+
+    string: {
+        type: 'text'
+    },
+
+    number: {
+        type: 'number',
+        number: true
+    },
+
+    button: {
+        type: 'button',
+        tag: 'button',
+        value: 'text'
+    },
+
+    text: {
+        tag: 'span',
+        // This will return the native textContent through Element.get():
+        value: 'text'
+    },
+
+    color: {
+        type: 'color'
+    },
+
+    slider: {
+        type: 'range',
+        number: true
+    },
+
+    ruler: {
+        tag: 'hr'
+    },
+
+    progress: {
+        tag: 'progress'
+    },
+
+    list: {
+        tag: 'select',
+
+        setOptions: function() {
+            Element.removeChildren(this._element);
+            Element.addChildren(this._element,
+                each(this._options, function(option) {
+                    this.push('option', { value: option, text: option });
+                }, []));
+        }
+    }
+}
+
+/**
  * @name Component
  * @class
  */
@@ -267,7 +449,7 @@ function Component(palette, parent, name, props, values, row) {
     // The row within which this component is contained. This can be a shared
     // row, e.g. when the parent component has a columns layout.
     this._row = row;
-    var type = this._type = props.type in this._types
+    var type = this._type = props.type in Palette.components
             ? props.type
             : 'options' in props
                 ? 'list'
@@ -276,7 +458,7 @@ function Component(palette, parent, name, props, values, row) {
                     : value !== undefined
                         ? typeof value
                         : undefined;
-    var meta = this._meta = this._types[type] || { type: type };
+    var meta = this._meta = Palette.components[type] || { type: type };
     var element;
     var className;
     if (row) {
@@ -410,84 +592,14 @@ function Component(palette, parent, name, props, values, row) {
     // it after range.
     set(this, props, { name: true, value: true }, true);
     this._defaultValue = this.value = value;
+    if (meta.create)
+        meta.create.call(this);
     // Start firing change events after we have initialized.
     this._emit = true;
 }
 
 Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component# */{
     // DOCS: All!
-
-    // Meta-information, by type. This is stored in _meta on the components.
-    _types: {
-        'boolean': {
-            type: 'checkbox',
-            value: 'checked'
-        },
-
-        string: {
-            type: 'text'
-        },
-
-        number: {
-            type: 'number',
-            number: true
-        },
-
-        button: {
-            type: 'button',
-            tag: 'button',
-            value: 'text'
-        },
-
-        text: {
-            tag: 'span',
-            // This will return the native textContent through Element.get():
-            value: 'text'
-        },
-
-        slider: {
-            type: 'range',
-            number: true
-        },
-
-        ruler: {
-            tag: 'hr'
-        },
-
-        progress: {
-            tag: 'progress'
-        },
-
-        list: {
-            tag: 'select',
-
-            setOptions: function() {
-                Element.removeChildren(this._element);
-                Element.addChildren(this._element,
-                    each(this._options, function(option) {
-                        this.push('option', { value: option, text: option });
-                    }, []));
-            }
-        },
-
-        color: {
-            type: 'color',
-
-            getValue: function(value) {
-                // Always convert internal string representation back to a
-                // paper.js color object.
-                return new Color(value);
-            },
-
-            setValue: function(value) {
-                // Only enfore hex values if the input field is indeed of
-                // color type. This allows sketch.paperjs.org to plug in
-                // the Spectrum.js library with alpha support.
-                return new Color(value).toCSS(
-                        Element.get(this._element, 'type') === 'color');
-            }
-        }
-    },
 
     // Default values for internals
     _visible: true,
@@ -623,6 +735,9 @@ Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component
         // in which case this._cell is not defined.
         Element.toggleClass(this._cell || this._row, 'hidden', !visible);
         Element.toggleClass(this._labelCell, 'hidden', !visible);
+        var setVisible = this._meta.setVisible;
+        if (setVisible)
+            setVisible.call(this, visible);
         this._visible = !!visible;
     },
 
@@ -641,6 +756,9 @@ Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component
                 this._components[i]._setEnabled(enabled, true);
         } else {
             Element.set(this._element, 'disabled', !enabled);
+            var setEnabled = this._meta.setEnabled;
+            if (setEnabled)
+                setEnabled.call(this, enabled);
         }
         this._enabled = !!enabled;
     },
@@ -693,127 +811,12 @@ Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component
         } else {
             this.value = this._defaultValue;
         }
+    },
+
+    toString: function() {
+        return 'Component ' + this._name || '@' + this._id;
     }
 });
-
-/**
- * @name Palette
- * @class
- */
-function Palette(props) {
-    // Support legacy constructor(title, components, values)
-    if (!isPlainObject(props)) {
-        var args = arguments;
-        props = { title: args[0], components: args[1], values: args[2] };
-    }
-    var components = this._components = props.components,
-        id = this._id = Palette._id = (Palette._id || 0) + 1,
-        title = props.title,
-        name = this._name = props.name || (title
-                // Hyphenate with '-' and replace non-word characters with '_'.
-                ? title.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/\W/g, '_')
-                    .toLowerCase()
-                : 'palette-' + this._id);
-    this._values = props.values || {};
-    this._allComponents = {};
-    // Create one root component that handles the layout and contains all
-    // the components.
-    var root = this._root = new Component(this, null, 'root', components,
-            this._values);
-    // Write the created components back into the passed components object,
-    // so they are exposed and can easily be accessed from the outside.
-    set(components, root._components);
-    var parent = props.parent
-            || Element.find('.palettejs-root')
-            || Element.find('body').appendChild(
-                Element.create('div', { class: 'palettejs-root' }));
-    this._element = parent.appendChild(Element.create('div', {
-                class: 'palettejs-palette palettejs-' + root._className,
-                id: 'palettejs-palette-' + name,
-                'data-id': id
-            }, [root._table]));
-    set(this, props, { components: true, values: true, parent: true }, true);
-    Palette.instances.push(this);
-    Palette.instances[id] = this;
-}
-
-Palette.prototype = merge(Emitter('onChange'), /** @lends Palette# */{
-    // DOCS: Palette#initialize(props)
-    // DOCS: Palette#initialize(title, components, values)
-    // DOCS: Palette#components
-    // DOCS: Palette#values
-    // DOCS: Palette#remove()
-
-    get name() {
-        return this._name;
-    },
-
-    get title() {
-        return this._root.title;
-    },
-
-    set title(title) {
-        this._root.title = title;
-    },
-
-    get element() {
-        return this._element;
-    },
-
-    get components() {
-        return this._components;
-    },
-
-    get allComponents() {
-        return this._allComponents;
-    },
-
-    get values() {
-        return this._values;
-    },
-
-    get enabled() {
-        return this._root.enabled;
-    },
-
-    set enabled(enabled) {
-        this._root.enabled = enabled;
-    },
-
-    /**
-     * Resets the values of the components to their
-     * {@link Component#defaultValue}.
-     */
-    reset: function() {
-        this._root.reset();
-    },
-
-    remove: function() {
-        Element.remove(this._element);
-        var instances = Palette.instances;
-        var index = instances.indexOf(this);
-        var remove = index !== -1;
-        if (remove) {
-            instances.splice(index, 1);
-            delete instances[this._id];
-        }
-        return remove;
-    }
-});
-
-Palette.instances = [];
-
-Palette.get = function(idOrElement) {
-    if (typeof idOrElement === 'object') {
-        // Support child elements by walking up the parents of the
-        // element until the palette element is found.
-        while (idOrElement && !Element.hasClass(idOrElement,
-                'palettejs-palette'))
-            idOrElement = idOrElement.parentNode;
-        idOrElement = Element.get(idOrElement, 'data-id');
-    }
-    return Palette.instances[idOrElement];
-};
 
 return Palette;
 }();
