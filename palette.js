@@ -375,7 +375,7 @@ Palette.get = function(idOrElement) {
     return Palette.instances[idOrElement];
 };
 
-// Componenent meta-information, by type.
+// Component meta-information, by type.
 // This is stored in #_meta on the components.
 Palette.components = {
     'boolean': {
