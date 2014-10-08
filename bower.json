@@ -12,12 +12,16 @@
     "globals"
   ],
   "keywords": [
-    "GUI", "palette", "user interface", "simple", "componenets"
+    "GUI",
+    "palette",
+    "user interface",
+    "simple",
+    "componenets"
   ],
   "license": "MIT",
   "ignore": [
     "**/.*",
     "node_modules",
-    "bower_components",
+    "bower_components"
   ]
 }
