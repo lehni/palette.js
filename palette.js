@@ -271,7 +271,6 @@ function Palette(props) {
                 .toLowerCase()
             : 'palette-' + this._id);
     this._values = props.values || {};
-    this._allComponents = {};
     // Create one root component that handles the layout and contains all
     // the components.
     var root = this._root = new Component(this, null, 'root', components,
@@ -317,10 +316,6 @@ Palette.prototype = merge(Emitter('onChange'), /** @lends Palette# */{
 
     get components() {
         return this._components;
-    },
-
-    get allComponents() {
-        return this._allComponents;
     },
 
     get values() {
@@ -512,8 +507,13 @@ function Component(palette, parent, name, props, values, row) {
                     if (is.columns)
                         this._row = currentRow;
                 }
-                palette._allComponents[key] = components[key] = new Component(
+                component = components[key] = new Component(
                         palette, this, key, component, values, currentRow);
+                // Also expose nested components through Palette#components, but
+                // only if there isn't already another component with the same
+                // name defined already.
+                if (!(key in palette._components))
+                    palette._components[key] = component;
                 // Keep track of the maximum amount of cells per row, so we can
                 // adjust colspan after.
                 numCells = Math.max(numCells, this._numCells);
