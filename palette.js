@@ -474,24 +474,28 @@ function Component(palette, parent, name, props, values, row) {
         // No type defined, so we're dealing with a layout component that
         // contains nested child components. See if they are to be aligned as
         // columns or rows, and lay things out accordingly.
-        // There are three possible types: 'rows', 'columns', 'horizontal'.
-        // 'horizontal' is the same as 'columns' but in its own separate table,
-        // unlinked from the parent layout.
+        // There are three possible types: 'rows', 'columns', 'horizontal',
+        // 'inline'. 'horizontal' is the same as 'columns' but in its own
+        // separate table, unlinked from the parent layout.
         var layout = props.layout || 'rows';
-        var columns = layout === 'columns';
+        var is = {};
+        is[layout]= true;
         // On the root element, we need to create the table and row even if it's
         // a columns layout.
-        var table = this._table = (layout === 'horizontal' || !(columns && row))
-                && Element.create('table', { class: 'palettejs-pane' },
-                    ['tbody']);
-        if (layout === 'horizontal')
-            columns = true;
+        if (is.inline)
+            is.horizontal = true;
+        var table = this._table = (is.horizontal || !(is.columns && row))
+                ? Element.create('table', { class: 'palettejs-pane' },
+                    ['tbody'])
+                : null;
+        if (is.horizontal)
+            is.columns = true;
         var tbody = this._tbody = table && table.firstChild;
         var components = this._components = {};
         // Only use current row if no new table is inserted
         var currentRow = !table && row;
         var numCells = 0;
-        element = row && table;
+        element = table;
         classes = ' palettejs-layout palettejs-layout-' + layout;
         this._numCells = 0;
         for (var key in props) {
@@ -499,13 +503,13 @@ function Component(palette, parent, name, props, values, row) {
             if (isPlainObject(component)) {
                 // Create the rows for vertical elements, as well as columns
                 // root elements.
-                if (table && !(columns && currentRow)) {
+                if (table && !(is.columns && currentRow)) {
                     currentRow = Element.addChild(tbody, ['tr', {
                         class: 'palettejs-row',
                         id: 'palettejs-row-' + key
                     }]);
                     // Set _row for the columns root element.
-                    if (columns)
+                    if (is.columns)
                         this._row = currentRow;
                 }
                 palette._allComponents[key] = components[key] = new Component(
@@ -515,7 +519,7 @@ function Component(palette, parent, name, props, values, row) {
                 numCells = Math.max(numCells, this._numCells);
                 // Do not reset cell counter if all components go to the
                 // same parent row.
-                if (!columns)
+                if (!is.columns)
                     this._numCells = 0;
                 // Remove the entry now from the object that was provided to
                 // create the component since the leftovers will be injected
@@ -526,11 +530,11 @@ function Component(palette, parent, name, props, values, row) {
         this._numCells = numCells;
         // If aligning things horizontally, we need to tell the parent how
         // many cells there are all together.
-        if (columns && parent)
+        if (is.columns && parent)
             parent._numCells = numCells;
         each(components, function(component, key) {
             // NOTE: Components with columns layout won't have their _cell set.
-            if (numCells > 2 && component._cell && !columns)
+            if (numCells > 2 && component._cell && !is.columns)
                 Element.set(component._cell, 'colspan', numCells);
             // Replace each entry in values with getters/setters so we can
             // directly link the value to the component and observe change.
