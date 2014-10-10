@@ -284,7 +284,7 @@ function Palette(props) {
             || Element.addChild(Element.find('body'),
                 ['div', { class: 'palettejs-root' }]);
     this._element = Element.addChild(parent, ['div', {
-                class: 'palettejs-palette palettejs-' + root._className,
+                class: 'palettejs-palette' + root._classes,
                 id: 'palettejs-palette-' + name
             }, [root._table]]);
     set(this, props, { components: true, values: true, parent: true }, true);
@@ -460,7 +460,7 @@ function Component(palette, parent, name, props, values, row) {
                         : undefined;
     var meta = this._meta = Palette.components[type] || { type: type };
     var element;
-    var className;
+    var classes;
     if (row) {
         this._labelCell = Element.addChild(row, ['td', {
             class: 'palettejs-label',
@@ -492,7 +492,7 @@ function Component(palette, parent, name, props, values, row) {
         var currentRow = !table && row;
         var numCells = 0;
         element = row && table;
-        className = 'layout-' + layout;
+        classes = ' palettejs-layout palettejs-layout-' + layout;
         this._numCells = 0;
         for (var key in props) {
             var component = props[key];
@@ -566,18 +566,18 @@ function Component(palette, parent, name, props, values, row) {
                 }
             }
         });
-        className = 'type-' + type;
+        classes = ' palettejs-type-' + type;
     }
     if (element) {
         this._cell = Element.addChild(row, ['td', {
-                class: 'palettejs-component palettejs-' + className,
+                class: 'palettejs-component' + classes,
                 id: 'palettejs-component-' + name
             }, [element]
         ]);
         if (parent)
             parent._numCells++;
     }
-    this._className = className;
+    this._classes = classes;
     // Attach default 'change' even that delegates to the palette.
     this.on('change', function(value) {
         if (this._emit)
