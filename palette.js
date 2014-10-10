@@ -96,8 +96,8 @@ var Element = new function() {
 
     return /** @lends Element */{
         create: function(nodes, parent) {
-            var isArray = Array.isArray(nodes),
-                res = create(isArray ? nodes : arguments,
+            var isArray = Array.isArray(nodes);
+            var res = create(isArray ? nodes : arguments,
                         isArray ? parent : null);
             return res.length === 1 ? res[0] : res;
         },
@@ -379,6 +379,10 @@ Palette.components = {
     },
 
     string: {
+        tag: function(props) {
+            // Use a textarea for multiline items (when #rows is defined).
+            return props.rows === undefined ? 'input' : 'textarea';
+        },
         type: 'text'
     },
 
@@ -395,7 +399,6 @@ Palette.components = {
 
     text: {
         tag: 'span',
-        // This will return the native textContent through Element.get():
         value: 'text'
     },
 
@@ -558,8 +561,13 @@ function Component(palette, parent, name, props, values, row) {
         set(this, components);
     } else {
         var that = this;
-        element = this._element = Element.create(meta.tag || 'input', {
-            id: !meta.tag ? 'palettejs-input-' + name : null,
+        var tag = typeof meta.tag === 'function'
+                ?  meta.tag.call(this, props)
+                :  meta.tag || 'input';
+        this._labelId = /$(input|textarea)^/.test(tag)
+                ? 'palettejs-input-' + name : null;
+        element = this._element = Element.create(tag, {
+            id: this._labelId,
             type: meta.type,
             events: {
                 change: function() {
