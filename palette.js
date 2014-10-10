@@ -332,7 +332,7 @@ Palette.prototype = merge(Emitter('onChange'), /** @lends Palette# */{
     },
 
     set enabled(enabled) {
-        this._root.enabled = enabled;
+        this._root._setEnabled(enabled, true);
     },
 
     /**
@@ -715,6 +715,8 @@ each(['type', 'name', 'title', 'palette', 'parent', 'element', 'label',
     },
 
     _setEnabled: function(enabled, _fromParent) {
+        if (!enabled ^ this._enabled) 
+            return;
         if (_fromParent) {
             // When called from the parent component, we have to remember the
             // component's previous enabled state when disabling the palette,
