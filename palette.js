@@ -598,28 +598,27 @@ function Component(palette, parent, name, props, values, row) {
     this._emit = true;
 }
 
-Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component# */{
+Component.prototype = merge(Emitter('onChange', 'onClick'),
+each(['type', 'name', 'title', 'palette', 'parent', 'element', 'label',
+        'suffix', 'options', 'visible', 'enabled'],
+    // Inject getters for all properties that simply redirect to the 'hidden'
+    // property that is prefixed with '_'.
+    function(key) {
+        var name = '_' + key;
+        define(this, key, {
+            enumerable: true,
+            configurable: true,
+            get: function() {
+                return this[name];
+            }
+        });
+    },
+/** @lends Component# */{
     // DOCS: All!
 
     // Default values for internals
     _visible: true,
     _enabled: true,
-
-    get type() {
-        return this._type;
-    },
-
-    get name() {
-        return this._name;
-    },
-
-    get element() {
-        return this._element;
-    },
-
-    get title() {
-        return this._title;
-    },
 
     set title(title) {
         this._title = title;
@@ -636,14 +635,6 @@ Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component
             }
             Element.set(node, 'text', title);
         }
-    },
-
-    get palette() {
-        return this._palette;
-    },
-
-    get parent() {
-        return this._parent;
     },
 
     get value() {
@@ -688,17 +679,11 @@ Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component
 
     _setLabel: function(label, nodeName, parent) {
         if (parent) {
-            this[nodeName] = Element.set(
-                    this[nodeName] || Element.addChild(parent, ['label', {
-                        'for': !this._meta.tag
-                            ? 'palettejs-input-' + this._name
-                            : null
-                    }]), 'text', label);
+            this[nodeName] = Element.set(this[nodeName]
+                    || Element.addChild(parent,
+                        ['label', { 'for': this._labelId }]),
+                    'text', label);
         }
-    },
-
-    get label() {
-        return this._label;
     },
 
     set label(label) {
@@ -706,17 +691,9 @@ Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component
         this._setLabel(label, '_labelNode', this._labelCell);
     },
 
-    get suffix() {
-        return this._suffix;
-    },
-
     set suffix(suffix) {
         this._suffix = suffix;
         this._setLabel(suffix, '_suffixNode', this._cell);
-    },
-
-    get options() {
-        return this._options;
     },
 
     set options(options) {
@@ -724,10 +701,6 @@ Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component
         var setOptions = this._meta.setOptions;
         if (setOptions)
             setOptions.call(this);
-    },
-
-    get visible() {
-        return this._visible;
     },
 
     set visible(visible) {
@@ -763,45 +736,17 @@ Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component
         this._enabled = !!enabled;
     },
 
-    get enabled() {
-        return this._enabled;
-    },
-
     set enabled(enabled) {
         this._setEnabled(enabled);
     },
 
-    get min() {
-        return parseFloat(Element.get(this._element, 'min'));
-    },
-
-    set min(min) {
-        Element.set(this._element, 'min', min);
-    },
-
-    get max() {
-        return parseFloat(Element.get(this._element, 'max'));
-    },
-
-    set max(max) {
-        Element.set(this._element, 'max', max);
-    },
-
     get range() {
-        return [this.min, this.max];
+        return [this._min, this._max];
     },
 
     set range(range) {
         this.min = range ? range[0] : null;
         this.max = range ? range[1] : null;
-    },
-
-    get step() {
-        return parseFloat(Element.get(this._element, 'step'));
-    },
-
-    set step(step) {
-        Element.set(this._element, 'step', step);
     },
 
     reset: function() {
@@ -816,7 +761,25 @@ Component.prototype = merge(Emitter('onChange', 'onClick'), /** @lends Component
     toString: function() {
         return 'Component ' + this._name || '@' + this._id;
     }
-});
+}),
+each(['min', 'max', 'step', 'rows', 'readonly', 'placeholder'],
+    // Inject getters and setters for all properties that simply redirect to the
+    // underlying HTML element.
+    function(key) {
+        var name = '_' + key;
+        define(this, key, {
+            enumerable: true,
+            configurable: true,
+            get: function() {
+                return this[name];
+            },
+            set: function(value) {
+                this[name] = value;
+                Element.set(this._element, key, value);
+            }
+        });
+    }, {})
+);
 
 return Palette;
 }();
