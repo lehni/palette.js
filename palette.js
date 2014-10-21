@@ -31,11 +31,9 @@ function each(obj, iter, bind) {
     return bind;
 }
 
-function set(obj, props, exclude, defined) {
+function set(obj, props, exclude) {
     for (var key in props)
-        if (props.hasOwnProperty(key)
-                && !(defined && !(key in obj))
-                && !(exclude && exclude[key])) {
+        if (props.hasOwnProperty(key) && !(exclude && exclude[key])) {
             obj[key] = props[key];
     }
     return obj;
@@ -286,7 +284,7 @@ function Palette(props) {
                 class: 'palettejs-palette' + root._classes,
                 id: 'palettejs-palette-' + name
             }, [root._table]]);
-    set(this, props, { components: true, values: true, parent: true }, true);
+    set(this, props, { components: true, values: true, parent: true });
     Palette.instances.push(this);
     Palette.instances[name] = this;
 }
@@ -602,7 +600,7 @@ function Component(palette, parent, name, props, values, row) {
     this._emit = false;
     // Exclude name because it's already set, and value since we want to set
     // it after range.
-    set(this, props, { name: true, value: true }, true);
+    set(this, props, { name: true, value: true });
     this._defaultValue = this.value = value;
     if (meta.create)
         meta.create.call(this);
