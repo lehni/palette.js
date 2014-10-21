@@ -143,7 +143,7 @@ var Element = new function() {
         },
 
         addClass: function(el, cls) {
-            if (el) {
+            if (el && !Element.hasClass(el, cls)) {
                 el.className = (el.className + ' ' + cls).trim();
             }
         },
@@ -151,7 +151,7 @@ var Element = new function() {
         removeClass: function(el, cls) {
             if (el) {
                 el.className = el.className.replace(
-                    new RegExp('\\s*' + cls + '\\s*'), ' ').trim();
+                    new RegExp('\\s*' + cls + '\\s*', 'g'), ' ').trim();
             }
         },
 
