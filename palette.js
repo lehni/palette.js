@@ -470,16 +470,18 @@ function Component(palette, parent, name, props, values, row) {
         // No type defined, so we're dealing with a layout component that
         // contains nested child components. See if they are to be aligned as
         // columns or rows, and lay things out accordingly.
-        // There are three possible types: 'rows', 'columns', 'horizontal',
-        // 'inline'. 'horizontal' is the same as 'columns' but in its own
-        // separate table, unlinked from the parent layout.
+        // There are three possible types: 'rows', 'columns', 'horizontal'.
+        // With 'rows' and 'columns' you make the child components a part of the
+        // same parent table, so they are laid out in a grid, and their sizes
+        // affect each other's positioning.
+        // 'horizontal' is the same as 'columns' but the components get added to
+        // their own separate table, thus only a s whole affecting the parent
+        // table.
         var layout = props.layout || 'rows';
         var is = {};
         is[layout]= true;
         // On the root element, we need to create the table and row even if it's
         // a columns layout.
-        if (is.inline)
-            is.horizontal = true;
         var table = this._table = (is.horizontal || !(is.columns && row))
                 ? Element.create('table', { class: 'palettejs-pane' },
                     ['tbody'])
