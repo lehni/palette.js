@@ -417,6 +417,11 @@ Palette.components = {
         tag: 'progress'
     },
 
+    html: {
+        tag: 'div',
+        value: 'html'
+    },
+
     list: {
         tag: 'select',
 
