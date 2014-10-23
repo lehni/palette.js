@@ -452,9 +452,9 @@ function Component(palette, parent, name, props, values, row) {
     this._row = row;
     var type = this._type = props.type in Palette.components
             ? props.type
-            : 'options' in props
+            : Array.isArray(props.options)
                 ? 'list'
-                : 'onClick' in props
+                : typeof props.onClick === 'function'
                     ? 'button'
                     : value !== undefined
                         ? typeof value
