@@ -569,7 +569,7 @@ function Component(palette, parent, name, props, values, row) {
         var tag = typeof meta.tag === 'function'
                 ?  meta.tag.call(this, props)
                 :  meta.tag || 'input';
-        this._labelId = /$(input|textarea)^/.test(tag)
+        this._labelId = /^(input|textarea)$/.test(tag)
                 ? 'palettejs-input-' + name : null;
         element = this._element = Element.create(tag, {
             id: this._labelId,
