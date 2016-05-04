@@ -1,7 +1,7 @@
 /*
  * Palette.js - Insert Elevator Pitch Here.
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni
+ * Copyright (c) 2011 - 2016, Juerg Lehni
  * http://scratchdisk.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.

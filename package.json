@@ -1,5 +1,6 @@
 {
-  "name": "palette",
+  "name": "palette.js",
+  "version": "0.0.5",
   "description": "Insert Elevator Pitch Here.",
   "license": "MIT",
   "homepage": "https://github.com/lehni/palette.js",
@@ -8,9 +9,7 @@
     "url": "git://github.com/lehni/palette.js"
   },
   "bugs": "https://github.com/lehni/palette.js/issues",
-  "authors": [
-    "Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)"
-  ],
+  "author": "Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)",
   "main": "palette.js",
   "keywords": [
     "GUI",
